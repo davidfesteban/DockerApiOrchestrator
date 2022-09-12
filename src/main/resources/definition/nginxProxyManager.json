@@ -1,0 +1,31 @@
+{
+  "image": "jlesage/nginx-proxy-manager",
+  "name": "nginx-proxy-manager",
+  "network": "host",
+  "ports": [
+    {
+      "host": "8000",
+      "container": "8000"
+    }
+  ],
+  "volumes": [
+    {
+      "host": "./data",
+      "container": "/config",
+      "permission": "rw"
+    }
+  ],
+  "restart": "always",
+  "others": [
+    {
+      "name": "stdin_open",
+      "value": "true"
+    }
+  ],
+  "environment": [
+    {
+      "name": "MODE",
+      "value": "survival"
+    }
+  ]
+}
