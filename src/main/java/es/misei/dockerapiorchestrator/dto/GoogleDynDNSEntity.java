@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 @NoArgsConstructor
 public class GoogleDynDNSEntity {
 
-    @Value("${google-dyn-dns.url}")
-    private String baseUrl;
     @Value("${google-dyn-dns.user}")
     private String user;
     @Value("${google-dyn-dns.pass}")

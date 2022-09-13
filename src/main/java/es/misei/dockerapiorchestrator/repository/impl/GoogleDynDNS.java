@@ -1,6 +1,7 @@
 package es.misei.dockerapiorchestrator.repository.impl;
 
 import es.misei.dockerapiorchestrator.dto.GoogleDynDNSEntity;
+import es.misei.dockerapiorchestrator.exception.ConnectionException;
 import es.misei.dockerapiorchestrator.repository.interfaces.GoogleDynDNSRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,18 +15,23 @@ public class GoogleDynDNS implements GoogleDynDNSRepository {
     private final GoogleDynDNSEntity googleDynDNSEntity;
     private final WebClient webClient;
 
-    public GoogleDynDNS() {
+    public GoogleDynDNS(WebClient googleApiBean) {
         this.googleDynDNSEntity = new GoogleDynDNSEntity();
-        this.webClient = WebClient.create(googleDynDNSEntity.getBaseUrl());
+        this.webClient = googleApiBean;
     }
 
-
     @Override
-    public Boolean updateIpAddress(String ip) {
-        return Objects.requireNonNull(webClient.get()
-                .attribute("ip", ip)
-                .attribute("user", googleDynDNSEntity.getUser())
-                .attribute("pass", googleDynDNSEntity.getPass())
-                .retrieve().toBodilessEntity().block()).getStatusCode().is2xxSuccessful();
+    public void updateIpAddress(String ip) {
+        try{
+            boolean result = Objects.requireNonNull(webClient.get()
+                    .attribute("ip", ip)
+                    .attribute("user", googleDynDNSEntity.getUser())
+                    .attribute("pass", googleDynDNSEntity.getPass())
+                    .retrieve().toBodilessEntity().block()).getStatusCode().is2xxSuccessful();
+
+            if(!result) throw new Exception();
+        } catch (Exception e) {
+            throw new ConnectionException();
+        }
     }
 }
