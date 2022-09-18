@@ -23,10 +23,13 @@ public class WebClientConfig {
         return WebClient.create(ipifyApi);
     }
 
-    //https://username:password@domains.google.com/nic/update?hostname=subdomain.yourdomain.com&myip=1.2.3.4
     @Bean
     public WebClient googleApiBean(GoogleDynDNSEntity googleDynDNSEntity) {
-        return WebClient.create(String.format(googleApi, googleDynDNSEntity.getUser(), googleDynDNSEntity.getPass()));
+        log.info("Google url {}", googleApi);
+        return WebClient.builder()
+                .defaultHeader("Authorization", googleDynDNSEntity.getAuth())
+                .defaultHeader("User-Agent", "Chrome/41.0")
+                .baseUrl(googleApi).build();
     }
 
 }

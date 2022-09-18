@@ -18,4 +18,8 @@ public class GoogleDynDNSEntity {
     private String pass;
     @Value("${google-dyn-dns.hostname}")
     private String hostname;
+
+    public String getAuth() {
+        return String.format("Basic %s:%s", user, pass);
+    }
 }

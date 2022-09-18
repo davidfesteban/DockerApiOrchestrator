@@ -31,10 +31,12 @@ public class RetryableAspect {
     private Object delegateRecursion(ProceedingJoinPoint joinPoint, Retryable retryable) {
         Object result = null;
         try {
+            log.info("Evaluating for retry");
             result = joinPoint.proceed();
         } catch (Throwable e) {
             ++iteration;
-            if(retryable.exception() == e.getClass() && iteration < retryable.maxAttemps()) {
+            log.info("Retrying under iteration: {}", iteration);
+            if (retryable.exception() == e.getClass() && iteration < retryable.maxAttemps()) {
                 result = delegateRecursion(joinPoint, retryable);
             }
         }

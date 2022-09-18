@@ -5,6 +5,8 @@ import de.naivetardis.landscaper.repository.impl.GoogleDynDNS;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.times;
@@ -22,7 +24,7 @@ public class IpListenerUpdaterIntegrationTest extends BaseIntegration {
     public void givenIpListener_whenScheduledCall_andNewIp_thenUpdateSuccessful() {
         BaseIntegration.mockBackEnd.setDispatcher(MockWebServerDispatcherBuilder.builder()
                 .addEndpoint("/ipListener", "0.0.0.8")
-                .addEndpoint("/googleDNS/update?hostname=testhost&myip=0.0.0.8", 200)
+                .addEndpoint("/googleDNS/nic/update?hostname=testhost&myip=0.0.0.8", 200)
                 .build());
 
         await().untilAsserted(() -> verify(ipListener, times(1)).run());
@@ -34,7 +36,7 @@ public class IpListenerUpdaterIntegrationTest extends BaseIntegration {
     public void givenIpListener_whenScheduledCall_thenListenerError() {
         BaseIntegration.mockBackEnd.setDispatcher(MockWebServerDispatcherBuilder.builder()
                 .addEndpoint("/ipListener", 400)
-                .addEndpoint("/googleDNS/update?hostname=testhost&myip=0.0.0.8", 200)
+                .addEndpoint("/googleDNS/nic/update?hostname=testhost&myip=0.0.0.8", 200)
                 .build());
 
         ipListener.run();
@@ -47,10 +49,10 @@ public class IpListenerUpdaterIntegrationTest extends BaseIntegration {
     public void givenIpListener_whenScheduledCall_andNewIp_thenUpdateError() {
         BaseIntegration.mockBackEnd.setDispatcher(MockWebServerDispatcherBuilder.builder()
                 .addEndpoint("/ipListener", "0.0.0.10")
-                .addEndpoint("/googleDNS/update?hostname=testhost&myip=0.0.0.10", 400)
+                .addEndpoint("/googleDNS/nic/update?hostname=testhost&myip=0.0.0.10", 400)
                 .build());
 
-        await().untilAsserted(() -> verify(ipListener, times(1)).run());
+        await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> verify(ipListener, times(1)).run());
         await().untilAsserted(() -> verify(googleDynDNS, times(3)).updateIpAddress(anyString()));
     }
 

@@ -19,7 +19,6 @@ public class IpListener {
     private final WebClient ipifyApiBean;
     private final IpUpdater ipUpdater;
 
-
     @Scheduled(initialDelay = 5, fixedDelayString = "${ipify-listener.seconds}", timeUnit = TimeUnit.SECONDS)
     public void run() {
         try {
