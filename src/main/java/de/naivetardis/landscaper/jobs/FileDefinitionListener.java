@@ -13,11 +13,10 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Set;
 
 @Component
 @Slf4j
-public class DefinitionListener /* implements FileChangeListener */ {
+public class FileDefinitionListener /* implements FileChangeListener */ {
 
 //   @Override
 //   public void onChange(Set<ChangedFiles> changeSet) {

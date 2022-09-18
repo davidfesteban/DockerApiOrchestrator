@@ -1,12 +1,11 @@
 package de.naivetardis.landscaper.configuration;
 
-import de.naivetardis.landscaper.jobs.DefinitionListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 //import org.springframework.boot.devtools.filewatch.FileSystemWatcher;
 
 //import javax.annotation.PreDestroy;
-import java.io.File;
+
 
 @Slf4j
 public class FileWatcherConfig {

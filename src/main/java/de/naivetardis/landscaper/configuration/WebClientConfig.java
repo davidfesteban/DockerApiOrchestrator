@@ -1,5 +1,6 @@
 package de.naivetardis.landscaper.configuration;
 
+import de.naivetardis.landscaper.dto.GoogleDynDNSEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,10 +22,11 @@ public class WebClientConfig {
         log.info("IpifyApi url {}", ipifyApi);
         return WebClient.create(ipifyApi);
     }
+
+    //https://username:password@domains.google.com/nic/update?hostname=subdomain.yourdomain.com&myip=1.2.3.4
     @Bean
-    public WebClient googleApiBean() {
-        log.info("Google url {}", googleApi);
-        return WebClient.create(googleApi);
+    public WebClient googleApiBean(GoogleDynDNSEntity googleDynDNSEntity) {
+        return WebClient.create(String.format(googleApi, googleDynDNSEntity.getUser(), googleDynDNSEntity.getPass()));
     }
 
 }
