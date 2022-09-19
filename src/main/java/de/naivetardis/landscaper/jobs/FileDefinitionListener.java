@@ -1,7 +1,8 @@
 package de.naivetardis.landscaper.jobs;
 
+import de.naivetardis.landscaper.service.DockerOrchestrator;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.devtools.filewatch.ChangedFile;
 import org.springframework.boot.devtools.filewatch.ChangedFiles;
 import org.springframework.boot.devtools.filewatch.FileChangeListener;
 import org.springframework.stereotype.Component;
@@ -14,21 +15,24 @@ import java.nio.file.StandardOpenOption;
 import java.util.Set;
 
 @Component
+@AllArgsConstructor
 @Slf4j
 public class FileDefinitionListener implements FileChangeListener {
 
+    private DockerOrchestrator dockerOrchestrator;
+
     @Override
     public void onChange(Set<ChangedFiles> changeSet) {
-        for (ChangedFiles cfiles : changeSet) {
-            for (ChangedFile cfile : cfiles.getFiles()) {
-                if ( /* (cfile.getType().equals(Type.MODIFY)
-                    || cfile.getType().equals(Type.ADD)
-                    || cfile.getType().equals(Type.DELETE) ) && */ !isLocked(cfile.getFile().toPath())) {
-                    log.info("Operation: " + cfile.getType()
-                            + " On file: " + cfile.getFile().getName() + " is done");
-                }
-            }
-        }
+        changeSet.forEach(changedFiles -> changedFiles.forEach(changedFile -> {
+                    if ( /* (cfile.getType().equals(Type.MODIFY)
+        || cfile.getType().equals(Type.ADD)
+        || cfile.getType().equals(Type.DELETE) ) && */ !isLocked(changedFile.getFile().toPath())) {
+                        dockerOrchestrator.loadDockerDefinition(changedFile);
+                        log.info("Operation: " + changedFile.getType()
+                                + " On file: " + changedFile.getFile().getName() + " is done");
+                    }
+                })
+        );
     }
 
     private boolean isLocked(Path path) {

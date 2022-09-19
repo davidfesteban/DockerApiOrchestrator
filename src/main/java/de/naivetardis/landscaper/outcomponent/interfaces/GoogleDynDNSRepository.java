@@ -1,4 +1,4 @@
-package de.naivetardis.landscaper.repository.interfaces;
+package de.naivetardis.landscaper.outcomponent.interfaces;
 
 import org.springframework.stereotype.Repository;
 

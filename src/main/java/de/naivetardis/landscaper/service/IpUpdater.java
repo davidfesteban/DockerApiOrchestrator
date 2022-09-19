@@ -1,6 +1,6 @@
 package de.naivetardis.landscaper.service;
 
-import de.naivetardis.landscaper.repository.interfaces.GoogleDynDNSRepository;
+import de.naivetardis.landscaper.outcomponent.interfaces.GoogleDynDNSRepository;
 import org.springframework.stereotype.Service;
 
 @Service

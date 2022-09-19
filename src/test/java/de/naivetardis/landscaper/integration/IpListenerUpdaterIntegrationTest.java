@@ -1,7 +1,7 @@
 package de.naivetardis.landscaper.integration;
 
 import de.naivetardis.landscaper.jobs.IpListener;
-import de.naivetardis.landscaper.repository.impl.GoogleDynDNS;
+import de.naivetardis.landscaper.outcomponent.impl.GoogleDynDNS;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
@@ -55,6 +55,5 @@ public class IpListenerUpdaterIntegrationTest extends BaseIntegration {
         await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> verify(ipListener, times(1)).run());
         await().untilAsserted(() -> verify(googleDynDNS, times(3)).updateIpAddress(anyString()));
     }
-
 
 }

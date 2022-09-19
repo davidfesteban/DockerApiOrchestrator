@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor
 @Component
 public class GoogleDynDNSEntity {
-
     @Value("${google-dyn-dns.user}")
     private String user;
     @Value("${google-dyn-dns.pass}")

@@ -1,17 +1,14 @@
-package de.naivetardis.landscaper.repository.impl;
+package de.naivetardis.landscaper.outcomponent.impl;
 
 import de.naivetardis.landscaper.annotation.Retryable;
 import de.naivetardis.landscaper.dto.GoogleDynDNSEntity;
 import de.naivetardis.landscaper.exception.ConnectionException;
-import de.naivetardis.landscaper.repository.interfaces.GoogleDynDNSRepository;
+import de.naivetardis.landscaper.outcomponent.interfaces.GoogleDynDNSRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriBuilder;
 
-import java.net.URI;
 import java.util.Objects;
-import java.util.function.Function;
 
 @Component
 @Slf4j
