@@ -1,4 +1,4 @@
-package de.naivetardis.landscaper.dto;
+package de.naivetardis.landscaper.dto.google;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

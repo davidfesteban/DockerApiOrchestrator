@@ -1,5 +1,5 @@
 
-package de.naivetardis.landscaper.dto.dockerjava;
+package de.naivetardis.landscaper.dto.docker;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "value"
 })
 @Generated("jsonschema2pojo")
-public class Other {
+public class Environment {
 
     @JsonProperty("name")
     private String name;

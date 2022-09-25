@@ -1,23 +1,23 @@
 package de.naivetardis.landscaper.service;
 
-import de.naivetardis.landscaper.outcomponent.interfaces.GoogleDynDNSRepository;
+import de.naivetardis.landscaper.bridge.GoogleDynDNSBridge;
 import org.springframework.stereotype.Service;
 
 @Service
 public class IpUpdater {
 
-    private final GoogleDynDNSRepository googleDynDNSRepository;
+    private final GoogleDynDNSBridge googleDynDNSBridgeRepository;
     private String previousIp;
 
-    public IpUpdater(GoogleDynDNSRepository googleDynDNSRepository) {
-        this.googleDynDNSRepository = googleDynDNSRepository;
+    public IpUpdater(GoogleDynDNSBridge googleDynDNSBridgeRepository) {
+        this.googleDynDNSBridgeRepository = googleDynDNSBridgeRepository;
         this.previousIp = "";
     }
 
     public void updateIpOnGoogleDynDns(String ip) {
-        if(!previousIp.equalsIgnoreCase(ip)) {
+        if (!previousIp.equalsIgnoreCase(ip)) {
             previousIp = ip;
-            googleDynDNSRepository.updateIpAddress(ip);
+            googleDynDNSBridgeRepository.updateIpAddress(ip);
         }
     }
 }

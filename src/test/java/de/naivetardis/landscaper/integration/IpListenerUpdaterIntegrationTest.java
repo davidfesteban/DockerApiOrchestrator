@@ -1,7 +1,7 @@
 package de.naivetardis.landscaper.integration;
 
 import de.naivetardis.landscaper.jobs.IpListener;
-import de.naivetardis.landscaper.outcomponent.impl.GoogleDynDNS;
+import de.naivetardis.landscaper.bridge.GoogleDynDNSBridge;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verify;
 public class IpListenerUpdaterIntegrationTest extends BaseIntegration {
 
     @SpyBean
-    private GoogleDynDNS googleDynDNS;
+    private GoogleDynDNSBridge googleDynDNSBridge;
 
     @SpyBean
     private IpListener ipListener;
@@ -28,7 +28,7 @@ public class IpListenerUpdaterIntegrationTest extends BaseIntegration {
                 .build());
 
         await().untilAsserted(() -> verify(ipListener, times(1)).run());
-        await().untilAsserted(() -> verify(googleDynDNS, times(1)).updateIpAddress(anyString()));
+        await().untilAsserted(() -> verify(googleDynDNSBridge, times(1)).updateIpAddress(anyString()));
 
     }
 
@@ -42,7 +42,7 @@ public class IpListenerUpdaterIntegrationTest extends BaseIntegration {
         ipListener.run();
 
         await().untilAsserted(() -> verify(ipListener, times(1)).run());
-        await().untilAsserted(() -> verify(googleDynDNS, times(0)).updateIpAddress(anyString()));
+        await().untilAsserted(() -> verify(googleDynDNSBridge, times(0)).updateIpAddress(anyString()));
     }
 
     @Test
@@ -53,7 +53,7 @@ public class IpListenerUpdaterIntegrationTest extends BaseIntegration {
                 .build());
 
         await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> verify(ipListener, times(1)).run());
-        await().untilAsserted(() -> verify(googleDynDNS, times(3)).updateIpAddress(anyString()));
+        await().untilAsserted(() -> verify(googleDynDNSBridge, times(3)).updateIpAddress(anyString()));
     }
 
 }

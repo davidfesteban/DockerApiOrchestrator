@@ -1,21 +1,10 @@
 package de.naivetardis.landscaper.mapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ContainerHostConfig;
-import com.github.dockerjava.api.model.ContainerPort;
-import de.naivetardis.landscaper.dto.dockerjava.DockerDefinitionEntity;
-import de.naivetardis.landscaper.dto.dockerjava.Port;
+import de.naivetardis.landscaper.dto.docker.DockerDefinitionEntity;
+import de.naivetardis.landscaper.dto.docker.Port;
 import lombok.experimental.UtilityClass;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import static java.lang.String.valueOf;
 import static java.util.Arrays.stream;

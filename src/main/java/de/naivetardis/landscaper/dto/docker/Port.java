@@ -1,5 +1,5 @@
 
-package de.naivetardis.landscaper.dto.dockerjava;
+package de.naivetardis.landscaper.dto.docker;
 
 import java.util.HashMap;
 import java.util.Map;

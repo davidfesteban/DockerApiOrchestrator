@@ -1,6 +1,6 @@
 package de.naivetardis.landscaper.configuration;
 
-import de.naivetardis.landscaper.dto.GoogleDynDNSEntity;
+import de.naivetardis.landscaper.dto.google.GoogleDynDNSEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
