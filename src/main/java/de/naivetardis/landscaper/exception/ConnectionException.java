@@ -12,4 +12,9 @@ public class ConnectionException extends RuntimeException {
         super("(╯°□°）╯︵ ┻━┻ :" + e.getMessage());
         log.error(super.getMessage());
     }
+
+    public ConnectionException(String s) {
+        super("(╯°□°）╯︵ ┻━┻ :" + s);
+        log.error(super.getMessage());
+    }
 }

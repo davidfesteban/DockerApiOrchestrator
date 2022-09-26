@@ -23,9 +23,12 @@ public class ReverseProxyService {
 
     private DockerOrchestrator dockerOrchestrator;
 
+    private AuthManager authManager;
+
     private final Set<String> tokens = new HashSet<>();
 
-    public ResponseEntity<String> handleAccess(@RequestBody(required = false) String body,
+
+    public ResponseEntity<String> handleAccess(String body,
                                                HttpMethod method, HttpServletRequest request, HttpServletResponse response) throws IOException {
         return new ResponseEntity<>(Files.readString(Path.of("src/main/resources/web/login.html"), Charset.defaultCharset()), HttpStatus.OK);
     }

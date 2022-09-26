@@ -1,4 +1,4 @@
-package de.naivetardis.landscaper.mapper;
+package de.naivetardis.landscaper.utility;
 
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ContainerHostConfig;
