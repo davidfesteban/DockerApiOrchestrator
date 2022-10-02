@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -30,6 +31,18 @@ public class WebClientConfig {
                 .defaultHeader("Authorization", googleDynDNSEntity.getAuth())
                 .defaultHeader("User-Agent", "Chrome/41.0")
                 .baseUrl(googleApi).build();
+    }
+
+    @Bean
+    public WebClient handlerClientBean() {
+        final int size = 16 * 1024 * 1024;
+        final ExchangeStrategies strategies = ExchangeStrategies.builder()
+                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size))
+                .build();
+        return WebClient.builder()
+                .baseUrl("http://www.google.es")
+                .exchangeStrategies(strategies)
+                .build();
     }
 
 }

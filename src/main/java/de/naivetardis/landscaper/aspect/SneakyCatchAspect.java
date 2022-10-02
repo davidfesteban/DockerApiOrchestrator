@@ -9,6 +9,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -37,11 +38,11 @@ public class SneakyCatchAspect {
         } catch (Throwable e) {
             if(sneakyCatch.exception().isInstance(e)) {
                 if(sneakyCatch.log()) {
-                    log.info("Error throwed {}", e.getMessage());
+                    log.info("Error throwed: {}", e.getMessage());
                 }
 
-                if (sneakyCatch.recoverClass() != null && sneakyCatch.recoverMethod() != null) {
-                    ReflectionUtils.findMethod(sneakyCatch.recoverClass(), sneakyCatch.recoverMethod()).invoke(null, null);
+                if (sneakyCatch.recoverClass() != null && StringUtils.hasText(sneakyCatch.recoverMethod())) {
+                    return ReflectionUtils.findMethod(sneakyCatch.recoverClass(), sneakyCatch.recoverMethod()).invoke(null, null);
                 }
             }
         }

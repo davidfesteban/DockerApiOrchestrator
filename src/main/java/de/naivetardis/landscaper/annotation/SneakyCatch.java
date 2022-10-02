@@ -12,7 +12,7 @@ public @interface SneakyCatch {
 
     boolean log() default true;
 
-    Class<?> recoverClass();
+    Class<?> recoverClass() default Object.class;
 
-    String recoverMethod();
+    String recoverMethod() default "";
 }

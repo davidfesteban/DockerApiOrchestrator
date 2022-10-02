@@ -2,7 +2,6 @@ package de.naivetardis.landscaper.api;
 
 import de.naivetardis.landscaper.annotation.SneakyCatch;
 import de.naivetardis.landscaper.service.AuthManager;
-import de.naivetardis.landscaper.service.ReverseProxyService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.ConnectException;
 
 @RestController
 @AllArgsConstructor
@@ -25,8 +25,12 @@ public class ApiController {
                                                HttpMethod method, HttpServletRequest request,
                                                HttpServletResponse response) throws IOException {
 
+        if(authManager.isBanned(request)) {
+            throw new ConnectException("You are banned!");
+        }
+
         if (!authManager.isAuthenticated(request)) {
-            authManager.clearCookies(request);
+            authManager.clearCookies(request, response);
             authManager.storeWhileWaitingForAuth(body, method, request, response);
             return AuthManager.loginView();
         }
@@ -42,6 +46,9 @@ public class ApiController {
                                        @RequestParam("code") String code,
                                        HttpServletRequest request,
                                        HttpServletResponse response) throws IOException {
+        if(authManager.isBanned(request)) {
+            throw new ConnectException("You are banned!");
+        }
 
         return authManager.auth(email, pass, code, request, response);
     }
@@ -51,6 +58,9 @@ public class ApiController {
     public ResponseEntity<String> onetime(@RequestParam("code") String code,
                                           HttpServletRequest request,
                                           HttpServletResponse response) throws IOException {
+        if(authManager.isBanned(request)) {
+            throw new ConnectException("You are banned!");
+        }
 
         return authManager.authByOneTimeCode(code, request, response);
     }
