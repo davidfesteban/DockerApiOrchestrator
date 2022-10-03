@@ -1,7 +1,9 @@
 package de.naivetardis.landscaper.api;
 
 import de.naivetardis.landscaper.annotation.SneakyCatch;
-import de.naivetardis.landscaper.service.AuthManager;
+import de.naivetardis.landscaper.service.AntiDDoSService;
+import de.naivetardis.landscaper.service.AuthManagerService;
+import de.naivetardis.landscaper.utility.AuthUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -11,59 +13,50 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.ConnectException;
 
 @RestController
 @AllArgsConstructor
 @Slf4j
 public class ApiController {
-    private AuthManager authManager;
+    private AuthManagerService authManagerService;
+    private AntiDDoSService antiDDoSService;
 
-    @SneakyCatch(recoverClass = AuthManager.class, recoverMethod = "loginView")
+    @SneakyCatch(recoverClass = AuthManagerService.class, recoverMethod = "loginView")
     @RequestMapping("/**")
     public ResponseEntity<String> reverseProxy(@RequestBody(required = false) String body,
                                                HttpMethod method, HttpServletRequest request,
                                                HttpServletResponse response) throws IOException {
 
-        if(authManager.isBanned(request)) {
-            throw new ConnectException("You are banned!");
+        if (!authManagerService.isTokenPresent(request)) {
+            antiDDoSService.controlTries(request);
+            authManagerService.resetClientByClearingCookies(request, response);
+            authManagerService.storeWhileWaitingForAuth(body, method, request, response);
+            return AuthUtils.loginView();
         }
 
-        if (!authManager.isAuthenticated(request)) {
-            authManager.clearCookies(request, response);
-            authManager.storeWhileWaitingForAuth(body, method, request, response);
-            return AuthManager.loginView();
-        }
+        antiDDoSService.releaseTries(request);
 
-        return authManager.handleRequest(body, method, request, response);
+        return authManagerService.handleRequest(body, method, request, response);
 
     }
 
-    @SneakyCatch(recoverClass = AuthManager.class, recoverMethod = "loginView")
+    @SneakyCatch(recoverClass = AuthManagerService.class, recoverMethod = "loginView")
     @GetMapping("/auth")
     public ResponseEntity<String> auth(@RequestParam("email") String email,
                                        @RequestParam("pswd") String pass,
                                        @RequestParam("code") String code,
                                        HttpServletRequest request,
                                        HttpServletResponse response) throws IOException {
-        if(authManager.isBanned(request)) {
-            throw new ConnectException("You are banned!");
-        }
-
-        return authManager.auth(email, pass, code, request, response);
+        antiDDoSService.controlTries(request);
+        return authManagerService.auth(email, pass, code, request, response);
     }
 
-    @SneakyCatch(recoverClass = AuthManager.class, recoverMethod = "loginView")
+    @SneakyCatch(recoverClass = AuthManagerService.class, recoverMethod = "loginView")
     @RequestMapping("/onetime")
     public ResponseEntity<String> onetime(@RequestParam("code") String code,
                                           HttpServletRequest request,
                                           HttpServletResponse response) throws IOException {
-        if(authManager.isBanned(request)) {
-            throw new ConnectException("You are banned!");
-        }
-
-        return authManager.authByOneTimeCode(code, request, response);
+        antiDDoSService.controlTries(request);
+        return authManagerService.authByOneTimeCode(code, request, response);
     }
-
-
 }

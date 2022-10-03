@@ -15,7 +15,6 @@ public class DockerClientConfig {
     @Value("${docker.api.url}")
     private String dockerApi;
 
-
     @Bean
     public DockerClient dockerClient() {
         return DockerClientBuilder.getInstance(dockerApi).build();

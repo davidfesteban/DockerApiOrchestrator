@@ -4,12 +4,12 @@ import de.naivetardis.landscaper.bridge.GoogleDynDNSBridge;
 import org.springframework.stereotype.Service;
 
 @Service
-public class IpUpdater {
+public class IpUpdaterService {
 
     private final GoogleDynDNSBridge googleDynDNSBridgeRepository;
     private String previousIp;
 
-    public IpUpdater(GoogleDynDNSBridge googleDynDNSBridgeRepository) {
+    public IpUpdaterService(GoogleDynDNSBridge googleDynDNSBridgeRepository) {
         this.googleDynDNSBridgeRepository = googleDynDNSBridgeRepository;
         this.previousIp = "";
     }

@@ -17,7 +17,7 @@ import java.util.function.Function;
 
 @Service
 @AllArgsConstructor
-public class DockerOrchestrator {
+public class DockerOrchestratorService {
 
     private final Set<Container> containerList;
     private ObjectMapper objectMapper;

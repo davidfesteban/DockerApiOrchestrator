@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.function.Function;
+
 @Configuration
 @Slf4j
 public class WebClientConfig {
@@ -17,6 +19,9 @@ public class WebClientConfig {
 
     @Value("${google-dyn-dns.url}")
     private String googleApi;
+
+    @Value("${handler.codec.mb-memory-size}")
+    private Integer memorySize;
 
     @Bean
     public WebClient ipifyApiBean() {
@@ -34,13 +39,13 @@ public class WebClientConfig {
     }
 
     @Bean
-    public WebClient handlerClientBean() {
-        final int size = 16 * 1024 * 1024;
+    public Function<String, WebClient> handlerClientFactory() {
+        final int size = memorySize * 1024 * 1024;
         final ExchangeStrategies strategies = ExchangeStrategies.builder()
                 .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size))
                 .build();
-        return WebClient.builder()
-                .baseUrl("http://www.google.es")
+        return url -> WebClient.builder()
+                .baseUrl(url)
                 .exchangeStrategies(strategies)
                 .build();
     }

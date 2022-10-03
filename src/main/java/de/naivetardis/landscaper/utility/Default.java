@@ -2,7 +2,7 @@ package de.naivetardis.landscaper.utility;
 
 public class Default<T> {
 
-    private T of;
+    private final T of;
 
     private Default(T of) {
         this.of = of;
@@ -13,7 +13,7 @@ public class Default<T> {
     }
 
     public T orElse(T orElse) {
-        if(of == null) {
+        if (of == null) {
             return orElse;
         }
 

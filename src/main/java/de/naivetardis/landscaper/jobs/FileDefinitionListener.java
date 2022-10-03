@@ -1,6 +1,6 @@
 package de.naivetardis.landscaper.jobs;
 
-import de.naivetardis.landscaper.service.DockerOrchestrator;
+import de.naivetardis.landscaper.service.DockerOrchestratorService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.devtools.filewatch.ChangedFiles;
@@ -19,7 +19,7 @@ import java.util.Set;
 @Slf4j
 public class FileDefinitionListener implements FileChangeListener {
 
-    private DockerOrchestrator dockerOrchestrator;
+    private DockerOrchestratorService dockerOrchestratorService;
 
     @Override
     public void onChange(Set<ChangedFiles> changeSet) {
@@ -27,7 +27,7 @@ public class FileDefinitionListener implements FileChangeListener {
                     if ( /* (cfile.getType().equals(Type.MODIFY)
         || cfile.getType().equals(Type.ADD)
         || cfile.getType().equals(Type.DELETE) ) && */ !isLocked(changedFile.getFile().toPath())) {
-                        dockerOrchestrator.loadDockerDefinition(changedFile);
+                        dockerOrchestratorService.loadDockerDefinition(changedFile);
                         log.info("Operation: " + changedFile.getType()
                                 + " On file: " + changedFile.getFile().getName() + " is done");
                     }
