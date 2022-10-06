@@ -52,11 +52,11 @@ public class AuthManagerService {
 
     }
 
-    public ResponseEntity<String> handleRequest(String body, HttpMethod method, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseEntity<?> handleRequest(String body, HttpMethod method, HttpServletRequest request, HttpServletResponse response) throws IOException {
         return proxyService.forwardWithProxyService(body, method, request, response);
     }
 
-    public ResponseEntity<String> auth(String email, String pass, String code, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseEntity<?> auth(String email, String pass, String code, HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (isValidAuth(email, pass, sharedDataEntity.getUser(), sharedDataEntity.getPass())) {
 
             memoryManagerService.editFrom(AVAILABLE_TOKENS,
@@ -74,7 +74,7 @@ public class AuthManagerService {
     }
 
 
-    public ResponseEntity<String> authByOneTimeCode(String code, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseEntity<?> authByOneTimeCode(String code, HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (memoryManagerService.viewFrom(MemoryType.AVAILABLE_CODES).containsKey(code)) {
 
             memoryManagerService.editFrom(AVAILABLE_TOKENS,
@@ -93,7 +93,7 @@ public class AuthManagerService {
         clearCookie(request, PROXY_TOKEN_NAME.name(), response);
     }
 
-    private ResponseEntity<String> recoverStoredRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private ResponseEntity<?> recoverStoredRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         //If it blows, it will redirect to login
         Cookie cookieUUID = Arrays.stream(request.getCookies())
                 .filter(cookie -> cookie.getName().equalsIgnoreCase(PROXY_UUID_NAME.name())).findFirst().get();

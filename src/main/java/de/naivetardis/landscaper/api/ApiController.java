@@ -23,26 +23,26 @@ public class ApiController {
 
     @SneakyCatch(recoverClass = AuthManagerService.class, recoverMethod = "loginView")
     @RequestMapping("/**")
-    public ResponseEntity<String> reverseProxy(@RequestBody(required = false) String body,
+    public ResponseEntity<?> reverseProxy(@RequestBody(required = false) String body,
                                                HttpMethod method, HttpServletRequest request,
                                                HttpServletResponse response) throws IOException {
 
-        if (!authManagerService.isTokenPresent(request)) {
-            antiDDoSService.controlTries(request);
-            authManagerService.resetClientByClearingCookies(request, response);
-            authManagerService.storeWhileWaitingForAuth(body, method, request, response);
-            return AuthUtils.loginView();
-        }
+        //if (!authManagerService.isTokenPresent(request)) {
+        //    antiDDoSService.controlTries(request);
+        //    authManagerService.resetClientByClearingCookies(request, response);
+        //    authManagerService.storeWhileWaitingForAuth(body, method, request, response);
+        //    return AuthUtils.loginView();
+        //}
 
-        antiDDoSService.releaseTries(request);
-
+        //antiDDoSService.releaseTries(request);
+        log.info("Receiving request for: {}", request.getRequestURI());
         return authManagerService.handleRequest(body, method, request, response);
 
     }
 
     @SneakyCatch(recoverClass = AuthManagerService.class, recoverMethod = "loginView")
     @GetMapping("/auth")
-    public ResponseEntity<String> auth(@RequestParam("email") String email,
+    public ResponseEntity<?> auth(@RequestParam("email") String email,
                                        @RequestParam("pswd") String pass,
                                        @RequestParam("code") String code,
                                        HttpServletRequest request,
@@ -53,7 +53,7 @@ public class ApiController {
 
     @SneakyCatch(recoverClass = AuthManagerService.class, recoverMethod = "loginView")
     @RequestMapping("/onetime")
-    public ResponseEntity<String> onetime(@RequestParam("code") String code,
+    public ResponseEntity<?> onetime(@RequestParam("code") String code,
                                           HttpServletRequest request,
                                           HttpServletResponse response) throws IOException {
         antiDDoSService.controlTries(request);
