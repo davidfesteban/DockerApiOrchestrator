@@ -22,6 +22,12 @@ public class SharedDataEntity {
     private Integer oneTimeCodeMinutes;
     @Value("${scheduler.token.minutes}")
     private Integer tokenExpireTime;
+    @Value("${host.url}")
+    private String hostUrl;
+
+    public String getHostUrl() {
+        return hostUrl;
+    }
 
     public Integer getAuthNumberTries() {
         return authNumberTries;

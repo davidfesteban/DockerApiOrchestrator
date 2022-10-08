@@ -46,10 +46,16 @@ public class AuthUtils {
         return new ResponseEntity<String>(Files.readString(Path.of("src/main/resources/web/login.html"), Charset.defaultCharset()), HttpStatus.OK);
     }
 
+    public static boolean isPublicSubdomain(HttpServletRequest request) {
+        return request.getServerName().startsWith("public");
+    }
+
+
+
     public static Properties requestToProperties(String body, HttpMethod httpMethod, HttpServletRequest request, ScheduledFuture<?> date) {
         Properties properties = new Properties();
 
-        //TODO: Optional.ofNullable() ??
+        //TODO: Names
         properties.put("body", Default.of(body).orElse(""));
         properties.put("method", Default.of(httpMethod).orElse(HttpMethod.GET));
         properties.put("request", request);

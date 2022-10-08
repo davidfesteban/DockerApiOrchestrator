@@ -1,6 +1,7 @@
 package de.naivetardis.landscaper.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ContainerPort;
 import lombok.AllArgsConstructor;
@@ -10,10 +11,9 @@ import org.springframework.boot.devtools.filewatch.ChangedFile;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -21,6 +21,7 @@ public class DockerOrchestratorService {
 
     private final Set<Container> containerList;
     private ObjectMapper objectMapper;
+    private DockerClient dockerClient;
 
     public Pair<Integer, Integer> retrievePortFromImageName(String name) {
         return containerList.stream()
@@ -32,6 +33,20 @@ public class DockerOrchestratorService {
     }
 
     public void saveCurrentRunningDockerStatus(List<Container> containers) {
+
+    }
+
+    public Map<String, String> getRouteByKeyNames() {
+        return dockerClient.listContainersCmd()
+                .withShowAll(true)
+                .withShowSize(true)
+                .withStatusFilter(List.of("running"))
+                .exec()
+                .stream()
+                .collect(Collectors.toMap(container -> Arrays.stream(container.getNames()).findFirst().get().replace("/", ""),
+                        container -> String.valueOf(
+                                Arrays.stream(container.getPorts()).filter(containerPort -> containerPort.getPublicPort() != null)
+                                        .toList().get(0).getPublicPort())));
 
     }
 

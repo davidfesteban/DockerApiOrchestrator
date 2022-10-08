@@ -1,5 +1,9 @@
 package de.naivetardis.landscaper.utility;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.IntFunction;
+
 public class Default<T> {
 
     private final T of;

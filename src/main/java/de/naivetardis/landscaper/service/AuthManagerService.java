@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 
 import static de.naivetardis.landscaper.service.CachedMemoryService.MemoryType.AVAILABLE_TOKENS;
 import static de.naivetardis.landscaper.service.CachedMemoryService.MemoryType.WAITING_USERS;
@@ -43,6 +44,7 @@ public class AuthManagerService {
         return Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equalsIgnoreCase(PROXY_TOKEN_NAME.name()))
                 .anyMatch(cookie -> availableTokens.stream().anyMatch(cookie.getValue()::equalsIgnoreCase));
     }
+
 
     public void storeWhileWaitingForAuth(String body, HttpMethod method, HttpServletRequest request, HttpServletResponse response) {
         memoryManagerService.editFrom(MemoryType.WAITING_USERS,
@@ -77,6 +79,7 @@ public class AuthManagerService {
     public ResponseEntity<?> authByOneTimeCode(String code, HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (memoryManagerService.viewFrom(MemoryType.AVAILABLE_CODES).containsKey(code)) {
 
+            //Extract newSchedulerdate
             memoryManagerService.editFrom(AVAILABLE_TOKENS,
                     injectCookie(request, response, PROXY_TOKEN_NAME),
                     memoryManagerService.newSchedulerDate(sharedDataEntity.getTokenExpireTime()));
@@ -104,7 +107,7 @@ public class AuthManagerService {
 
         return handleRequest((String) properties.get("body"),
                 (HttpMethod) properties.get("method"), (HttpServletRequest) properties.get("request"),
-                (HttpServletResponse) properties.get("response"));
+                response);
     }
 
     private String injectCookie(HttpServletRequest request, HttpServletResponse response, CookieType cookieType) {
