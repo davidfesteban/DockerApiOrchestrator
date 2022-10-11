@@ -1,30 +1,20 @@
 package de.naivetardis.landscaper.service;
 
 import de.naivetardis.landscaper.dto.general.SharedDataEntity;
-import de.naivetardis.landscaper.exception.ConnectionException;
-import de.naivetardis.landscaper.service.CachedMemoryService.MemoryType;
+import de.naivetardis.landscaper.dto.net.HttpRequestEntity;
 import de.naivetardis.landscaper.utility.AuthUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
 
-import static de.naivetardis.landscaper.service.CachedMemoryService.MemoryType.AVAILABLE_TOKENS;
-import static de.naivetardis.landscaper.service.CachedMemoryService.MemoryType.WAITING_USERS;
 import static de.naivetardis.landscaper.utility.AuthUtils.*;
-import static de.naivetardis.landscaper.utility.AuthUtils.CookieType.PROXY_TOKEN_NAME;
-import static de.naivetardis.landscaper.utility.AuthUtils.CookieType.PROXY_UUID_NAME;
 
 @Service
 @AllArgsConstructor
@@ -32,95 +22,80 @@ import static de.naivetardis.landscaper.utility.AuthUtils.CookieType.PROXY_UUID_
 public class AuthManagerService {
     private MemoryManagerService memoryManagerService;
     private ProxyService proxyService;
-    private SharedDataEntity sharedDataEntity;
 
-    public boolean isTokenPresent(HttpServletRequest request) {
-        if (!hasCookies(request)) {
-            return false;
+    private SharedDataEntity dataEntity;
+
+    public ResponseEntity<?> handleSingleRequest(String body, HttpMethod method, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        return proxyService.forwardWithProxyService(HttpRequestEntity.buildFrom(body, method, request), response);
+    }
+
+    public ResponseEntity<?> holdAndWaitForAuth(String body, HttpMethod method, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
+        log.info("Holding request {}", request.getRequestURI());
+        memoryManagerService.holdAndWaitForAuth(request);
+
+        return proxyService.forwardWithProxyService(HttpRequestEntity.buildFrom(body, method, request), response);
+    }
+
+    public ResponseEntity<?> storeRequestAndShowLoginView(String body, HttpMethod method, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String UUID = memoryManagerService.generateUUIDFrom(request.getRemoteAddr());
+        response.addCookie(new Cookie(CookieType.PROXY_UUID_NAME.name(), UUID));
+        memoryManagerService.storeRequestFromUser(UUID, HttpRequestEntity.buildFrom(body, method, request));
+
+        log.info("Stored request {}", request.getRequestURI());
+        return loginView();
+    }
+
+    public boolean userWaitingForAuth(HttpServletRequest request) {
+        if (AuthUtils.hasCookie(request, CookieType.PROXY_UUID_NAME.name())) {
+            return memoryManagerService.userWaitingForAuth(AuthUtils.getCookie(request, CookieType.PROXY_UUID_NAME.name()).get().getValue());
         }
 
-        final Set<String> availableTokens = memoryManagerService.viewFrom(AVAILABLE_TOKENS).keySet();
-
-        return Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equalsIgnoreCase(PROXY_TOKEN_NAME.name()))
-                .anyMatch(cookie -> availableTokens.stream().anyMatch(cookie.getValue()::equalsIgnoreCase));
+        return false;
     }
 
-
-    public void storeWhileWaitingForAuth(String body, HttpMethod method, HttpServletRequest request, HttpServletResponse response) {
-        memoryManagerService.editFrom(MemoryType.WAITING_USERS,
-                injectCookie(request, response, PROXY_UUID_NAME),
-                AuthUtils.requestToProperties(body, method, request,
-                        memoryManagerService.newSchedulerDate(sharedDataEntity.getWaitingUserMinutes())));
-
+    public boolean isAuthSuccessful(String email, String pass) {
+        return isValidAuth(email, pass, dataEntity.getUser(), dataEntity.getPass());
     }
 
-    public ResponseEntity<?> handleRequest(String body, HttpMethod method, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        return proxyService.forwardWithProxyService(body, method, request, response);
+    public boolean isAuthSuccessful(String code) {
+        return memoryManagerService.isCodeValid(code);
     }
 
-    public ResponseEntity<?> auth(String email, String pass, String code, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        if (isValidAuth(email, pass, sharedDataEntity.getUser(), sharedDataEntity.getPass())) {
-
-            memoryManagerService.editFrom(AVAILABLE_TOKENS,
-                    injectCookie(request, response, PROXY_TOKEN_NAME),
-                            memoryManagerService.newSchedulerDate(sharedDataEntity.getTokenExpireTime()));
-
-            if (StringUtils.hasText(code)) {
-                memoryManagerService.editFrom(MemoryType.AVAILABLE_CODES, code,
-                        memoryManagerService.newSchedulerDate(sharedDataEntity.getOneTimeCodeMinutes()));
-            }
-
-            return recoverStoredRequest(request, response);
-        }
-        throw new ConnectionException("You shouldn´t be here. To the lobby!");
+    public void storeSingleCodeSession(String code) {
+        memoryManagerService.storeSingleCodeSession(code);
     }
 
-
-    public ResponseEntity<?> authByOneTimeCode(String code, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        if (memoryManagerService.viewFrom(MemoryType.AVAILABLE_CODES).containsKey(code)) {
-
-            //Extract newSchedulerdate
-            memoryManagerService.editFrom(AVAILABLE_TOKENS,
-                    injectCookie(request, response, PROXY_TOKEN_NAME),
-                    memoryManagerService.newSchedulerDate(sharedDataEntity.getTokenExpireTime()));
-
-            memoryManagerService.removeFrom(MemoryType.AVAILABLE_CODES, code);
-            return recoverStoredRequest(request, response);
-        }
-
-        throw new ConnectionException("You shouldn´t be here. To the lobby!");
+    public void injectUserToken(HttpServletRequest request, HttpServletResponse response) {
+        String TOKEN = memoryManagerService.generateTokenFrom(request.getRemoteAddr());
+        response.addCookie(new Cookie(CookieType.PROXY_TOKEN_NAME.name(), TOKEN));
     }
 
-    public void resetClientByClearingCookies(HttpServletRequest request, HttpServletResponse response) {
-        clearCookie(request, PROXY_UUID_NAME.name(), response);
-        clearCookie(request, PROXY_TOKEN_NAME.name(), response);
-    }
-
-    private ResponseEntity<?> recoverStoredRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        //If it blows, it will redirect to login
-        Cookie cookieUUID = Arrays.stream(request.getCookies())
-                .filter(cookie -> cookie.getName().equalsIgnoreCase(PROXY_UUID_NAME.name())).findFirst().get();
-
-        Properties properties = (Properties) memoryManagerService.viewFrom(WAITING_USERS).get(cookieUUID.getValue());
-
-        clearCookie(request, PROXY_UUID_NAME.name(), response);
-
-        return handleRequest((String) properties.get("body"),
-                (HttpMethod) properties.get("method"), (HttpServletRequest) properties.get("request"),
+    public ResponseEntity<?> recoverStoredRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        log.info("Recovering stored request");
+        return proxyService.forwardWithProxyService(
+                memoryManagerService.recoverStoredRequest(AuthUtils.getCookie(request, CookieType.PROXY_UUID_NAME.name()).get().getValue()),
                 response);
     }
 
-    private String injectCookie(HttpServletRequest request, HttpServletResponse response, CookieType cookieType) {
-        String random = memoryManagerService.createRandomFor(request.getRemoteAddr());
-        response.addCookie(new Cookie(cookieType.name(), random));
-        return random;
+    public void removeSingleCodeSession(String code) {
+        memoryManagerService.removeCodeSession(code);
     }
 
-    private void clearCookie(HttpServletRequest request, String randomName, HttpServletResponse response) {
-        AuthUtils.clearCookie(request, randomName, response,
-                cookieValue -> memoryManagerService.removeFrom(
-                        CookieType.valueOf(randomName).getValue(), cookieValue));
+    public void unblockPreviousRequests(HttpServletRequest request, HttpServletResponse response) {
+        String uuid = AuthUtils.getCookie(request, CookieType.PROXY_UUID_NAME.name()).get().getValue();
+        Cookie cookie = new Cookie(CookieType.PROXY_UUID_NAME.name(), uuid);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        memoryManagerService.unblockPreviousRequestsWithUUID(uuid);
     }
 
+    public boolean isAuthenticated(HttpServletRequest request) {
 
+        if (AuthUtils.hasCookie(request, CookieType.PROXY_TOKEN_NAME.name())) {
+            return memoryManagerService.isTokenValid(
+                    AuthUtils.getCookie(request, CookieType.PROXY_TOKEN_NAME.name()).get().getValue());
+        }
+
+        return false;
+    }
 }
