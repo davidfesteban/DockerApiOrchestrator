@@ -56,22 +56,19 @@ public class ProxyService {
     }
 
     private void addNewHeadersIntoServletResponse(ResponseEntity<?> responseFromService, HttpServletResponse response) {
-        Optional.of(responseFromService.getHeaders()).ifPresent(new Consumer<HttpHeaders>() {
-            @Override
-            public void accept(HttpHeaders httpHeaders) {
-                if (!httpHeaders.isEmpty()) {
-                    httpHeaders.forEach(new BiConsumer<String, List<String>>() {
+        if(responseFromService.getHeaders() != null && !responseFromService.getHeaders().isEmpty()){
+            responseFromService.getHeaders().forEach(new BiConsumer<String, List<String>>() {
+                @Override
+                public void accept(String s, List<String> strings) {
+                    strings.forEach(new Consumer<String>() {
                         @Override
-                        public void accept(String s, List<String> strings) {
-                            if (!strings.isEmpty() && response != null) {
-                                response.addHeader(s, strings.get(0));
-                            }
+                        public void accept(String value) {
+                            response.addHeader(s, value);
                         }
                     });
                 }
-                ;
-            }
-        });
+            });
+        }
     }
 
     private Object prepareBody(String body) {

@@ -91,11 +91,13 @@ public class AuthManagerService {
 
     public boolean isAuthenticated(HttpServletRequest request) {
 
+        log.info("Has TOKEN: {}", AuthUtils.hasCookie(request, CookieType.PROXY_TOKEN_NAME.name()));
         if (AuthUtils.hasCookie(request, CookieType.PROXY_TOKEN_NAME.name())) {
-            return memoryManagerService.isTokenValid(
-                    AuthUtils.getCookie(request, CookieType.PROXY_TOKEN_NAME.name()).get().getValue());
+            log.info("Is valid TOKEN: {}", memoryManagerService.isTokenValid(
+                    AuthUtils.getCookie(request, CookieType.PROXY_TOKEN_NAME.name()).get().getValue()));
+            return memoryManagerService.isAddressOnToken(request.getRemoteAddr());
         }
 
-        return false;
+        return memoryManagerService.isAddressOnToken(request.getRemoteAddr());
     }
 }

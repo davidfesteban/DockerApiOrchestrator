@@ -4,9 +4,13 @@ import de.naivetardis.landscaper.service.AuthManagerService;
 import de.naivetardis.landscaper.utility.AuthUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpMethod;
+
+import org.springframework.cloud.gateway.mvc.ProxyExchange;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,29 +21,36 @@ import java.util.concurrent.Semaphore;
 @AllArgsConstructor
 @Slf4j
 public class ApiController {
+    private final Semaphore semaphore = new Semaphore(1);
     private AuthManagerService authManagerService;
 
-    private final Semaphore semaphore = new Semaphore(1);
-
     //@SneakyCatch(recoverClass = AuthUtils.class, recoverMethod = "loginView")
-    @RequestMapping("/**")
-    public ResponseEntity<?> reverseProxy(@RequestBody(required = false) String body,
-                                          HttpMethod method, HttpServletRequest request,
-                                          HttpServletResponse response) throws IOException, InterruptedException {
-        semaphore.acquire();
+    //@RequestMapping("/**")
+    //public ResponseEntity<?> reverseProxy(@RequestBody(required = false) String body,
+    //                                      HttpMethod method, HttpServletRequest request,
+    //                                      HttpServletResponse response) throws IOException, InterruptedException {
+    //semaphore.acquire();
+    //return authManagerService.handleSingleRequest(body, method, request, response);
 
-        if (AuthUtils.isPublicSubdomain(request) || authManagerService.isAuthenticated(request)) {
-            semaphore.release();
-            return authManagerService.handleSingleRequest(body, method, request, response);
-        }
+    //if (AuthUtils.isPublicSubdomain(request) || authManagerService.isAuthenticated(request)) {
+    //    semaphore.release();
+    //    return authManagerService.handleSingleRequest(body, method, request, response);
+    //}
 
-        if (authManagerService.userWaitingForAuth(request)) {
-            return authManagerService.holdAndWaitForAuth(body, method, request, response);
-        }
+    //if (authManagerService.userWaitingForAuth(request)) {
+    //    return authManagerService.holdAndWaitForAuth(body, method, request, response);
+    //}
 
-        return authManagerService.storeRequestAndShowLoginView(body, method, request, response);
+    //return authManagerService.storeRequestAndShowLoginView(body, method, request, response);
 
+    //}
+
+    @RequestMapping(path = "/**")
+    public void proxy(ProxyExchange<byte[]> proxy) throws Exception {
+        proxy.forward(proxy.path());
+        //return proxy.uri("http://localhost:1234").sensitive("").forward(proxy.path());
     }
+
 
     //@SneakyCatch(recoverClass = AuthUtils.class, recoverMethod = "loginView")
     @GetMapping("/auth")
@@ -74,7 +85,7 @@ public class ApiController {
         authManagerService.injectUserToken(request, response);
         ResponseEntity<?> responseEntity = authManagerService.recoverStoredRequest(request, response);
 
-        authManagerService.unblockPreviousRequests(request, response);
+        //authManagerService.unblockPreviousRequests(request, response);
 
         semaphore.release();
         return responseEntity;
